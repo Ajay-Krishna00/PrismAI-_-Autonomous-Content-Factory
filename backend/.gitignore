@@ -1,3 +1,23 @@
-venv
-.env.example
+# Environments
+venv/
+env/
+.venv/
 .env*
+!.env.example
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caches
+.pytest_cache/
+.mypy_cache/
+
+# IDEs and Editors
+.vscode/
+.idea/
+.DS_Store
+
+# Databases
+*.sqlite3

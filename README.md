@@ -5,13 +5,13 @@ An AI-powered multi-agent system built to automate marketing campaigns from a si
 ## System Architecture
 - **Frontend**: Next.js (App Router) + Tailwind CSS
 - **Backend**: FastAPI + LangGraph (Python)
-- **AI Models**: Google Gemini 1.5 Flash (via API) + Meta Llama-3 (Local)
+- **AI Models**: Google Gemini 2.5 Flash (via API) + llama3:8b-instruct-q4_K_M (Local)
 - **Deployment**: Docker Compose
 
 ## Prerequisites
 1. **Ollama**: You must have Ollama installed natively on your host machine to run Llama-3. We intentionally decoupled this from Docker to prevent GPU-passthrough errors across different hardware environments.
    - Install from [ollama.com](https://ollama.com).
-   - Once installed, open your terminal and run: `ollama run llama3:8b-instruct`
+   - Once installed, open your terminal and run: `ollama run llama3:8b-instruct-q4_K_M`
 2. **Docker**: Ensure Docker Desktop is installed and running.
 
 ## Local Setup Instructions
@@ -40,4 +40,4 @@ An AI-powered multi-agent system built to automate marketing campaigns from a si
    - Backend API Docs: `http://localhost:8000/docs`
 
 ---
-*(Note: These setup instructions will work perfectly for your evaluator to run the final project)*
+
