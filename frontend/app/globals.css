@@ -1,10 +1,9 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@plugin "tailwindcss-animate";
 
 body {
   background-color: #f8fafc;
-  /* light gray background */
   color: #0f172a;
-  /* dark slate text */
 }
+
