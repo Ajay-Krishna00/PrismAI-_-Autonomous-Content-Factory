@@ -98,3 +98,7 @@ Open:
 docker-compose up --build
 ```
 
+## Sample Input
+
+You can use the sample product source file at [sample_product.md](sample_product.md), or provide any source material you prefer (product brief, URL content, launch notes, etc.).
+

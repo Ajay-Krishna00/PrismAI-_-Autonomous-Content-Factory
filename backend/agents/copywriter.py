@@ -405,6 +405,26 @@ def _coerce_positive_int(value: str | None, default: int) -> int:
         return default
 
 
+def _is_local_unreachable_error(error_text: str) -> bool:
+    lowered = (error_text or "").lower()
+    unreachable_signals = (
+        "winerror 10061",
+        "connection refused",
+        "failed to connect",
+        "connection error",
+        "max retries exceeded",
+        "errno 111",
+        "ollama",
+    )
+    return any(signal in lowered for signal in unreachable_signals)
+
+
+def _attach_runtime_metadata(payload: dict, runtime_note: str, mode: Literal["local", "groq"]) -> dict:
+    payload["copywriter_runtime_note"] = runtime_note
+    payload["copywriter_mode"] = mode
+    return payload
+
+
 def _extract_retry_after_seconds(exc: urllib.error.HTTPError, error_payload: str) -> float | None:
     header_value = exc.headers.get("Retry-After") if exc.headers else None
     if header_value:
@@ -628,7 +648,7 @@ JSON format:
                     if mode == "groq"
                     else "Copywriter is running on local Ollama Llama-3."
                 )
-                normalized["copywriter_runtime_note"] = runtime_note
+                _attach_runtime_metadata(normalized, runtime_note, mode)
                 if regenerate_channel is None:
                     return normalized
 
@@ -658,8 +678,10 @@ Content to repair:
                 repaired_payload = _parse_json_payload(repaired)
                 if repaired_payload is not None and _has_required_draft_fields(repaired_payload):
                     normalized = _enforce_output_shape(repaired_payload, value_proposition=value_proposition, target_audience=target_audience)
-                    normalized["copywriter_runtime_note"] = (
-                        "Copywriter output required JSON repair before normalization."
+                    _attach_runtime_metadata(
+                        normalized,
+                        "Copywriter output required JSON repair before normalization.",
+                        mode,
                     )
                     if regenerate_channel is None:
                         return normalized
@@ -682,22 +704,39 @@ Content to repair:
 
         print("[WARN] Copywriter returned non-JSON or incomplete JSON. Falling back to template drafts.")
         fallback = _fallback_drafts(facts, feedback, target_audience, value_proposition)
-        fallback["copywriter_runtime_note"] = "Copywriter returned invalid JSON. Drafts were repaired using fallback constraints."
+        _attach_runtime_metadata(
+            fallback,
+            "Copywriter returned invalid JSON. Drafts were repaired using fallback constraints.",
+            mode,
+        )
         return fallback
 
     except Exception as exc:
         error_text = str(exc)
         runtime_note = "Copywriter backend failed. Fallback drafts were generated from source of truth."
-        if mode == "local" and ("WinError 10061" in error_text or "Connection refused" in error_text):
+        if mode == "local" and _is_local_unreachable_error(error_text):
             print(
                 "[WARN] Ollama is unreachable. Start it with `ollama serve` and ensure "
                 "model `llama3:8b-instruct-q4_K_M` is available via `ollama pull`."
             )
-            fallback = _fallback_drafts(facts, feedback, target_audience, value_proposition)
-            fallback["copywriter_runtime_note"] = (
-                "Local Ollama is unreachable. Switch Hybrid Toggle to Groq Cloud for reliable generation."
-            )
-            return fallback
+            switch_note = "Local Ollama is unreachable or not installed. Automatically switched to Groq Cloud Llama."
+            failover_state: GraphState = {**state, "copywriter_mode": "groq", "copywriter_runtime_note": switch_note}
+
+            try:
+                failover_result = run_copywriter(failover_state, regenerate_channel=regenerate_channel)
+                existing_note = _normalize_text(failover_result.get("copywriter_runtime_note"), "")
+                combined_note = f"{switch_note} {existing_note}".strip() if existing_note else switch_note
+                _attach_runtime_metadata(failover_result, combined_note, "groq")
+                return failover_result
+            except Exception as failover_exc:
+                print(f"[WARN] Groq failover after local outage failed: {failover_exc}")
+                fallback = _fallback_drafts(facts, feedback, target_audience, value_proposition)
+                _attach_runtime_metadata(
+                    fallback,
+                    f"{switch_note} Groq failover also failed; using fallback drafts.",
+                    "groq",
+                )
+                return fallback
 
         if mode == "groq" and isinstance(exc, urllib.error.HTTPError):
             error_payload = getattr(exc, "prismai_error_payload", "")
@@ -729,5 +768,5 @@ Content to repair:
             runtime_note = f"Copywriter backend failed ({error_text}). Using fallback drafts."
 
         fallback = _fallback_drafts(facts, feedback, target_audience, value_proposition)
-        fallback["copywriter_runtime_note"] = runtime_note
+        _attach_runtime_metadata(fallback, runtime_note, mode)
         return fallback

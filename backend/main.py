@@ -70,6 +70,18 @@ def _build_initial_state(source_material: str, copywriter_mode: Literal["local",
     }
 
 
+def _force_approval_on_final_attempt(state: GraphState, max_revisions: int) -> None:
+    if state.get("is_approved"):
+        return
+
+    if state.get("revision_count", 0) >= max_revisions:
+        state["is_approved"] = True
+        state["editor_feedback"] = (
+            "APPROVE: Auto-approved after reaching the maximum revision limit. "
+            "Proceeding with the latest improved draft set."
+        )
+
+
 def _run_campaign_pipeline(initial_state: GraphState, max_revisions: int = 4):
     state: GraphState = {**initial_state}
 
@@ -88,6 +100,7 @@ def _run_campaign_pipeline(initial_state: GraphState, max_revisions: int = 4):
         editor_update = run_editor(state)
         state.update(editor_update)
         state["is_approved"] = bool(state.get("is_approved"))
+        _force_approval_on_final_attempt(state, max_revisions)
         yield "editor", {**state}
 
         if state.get("is_approved"):
@@ -123,6 +136,7 @@ async def generate_campaign(request:CampaignRequest):
             "approved": final_state.get("is_approved"),
             "editor_notes": final_state.get("editor_feedback"),
             "revisions": final_state.get("revision_count", 0),
+            "copywriter_mode": final_state.get("copywriter_mode", request.copywriter_mode),
             "copywriter_runtime_note": final_state.get("copywriter_runtime_note", ""),
         }
     except Exception as e:
@@ -166,6 +180,7 @@ async def regenerate_channel(request: ChannelRegenerateRequest):
             "draft_copy": drafts.get("draft_copy", request.draft_copy),
             "social_draft": drafts.get("social_draft", request.social_draft),
             "email_draft": drafts.get("email_draft", request.email_draft),
+            "copywriter_mode": drafts.get("copywriter_mode", request.copywriter_mode),
             "copywriter_runtime_note": drafts.get("copywriter_runtime_note", ""),
         }
     except Exception as e:
@@ -242,6 +257,7 @@ async def generate_campaign_stream(request: CampaignRequest):
                 editor_update = await asyncio.to_thread(run_editor, state)
                 state.update(editor_update)
                 state["is_approved"] = bool(state.get("is_approved"))
+                _force_approval_on_final_attempt(state, max_revisions)
                 last_state = {**state}
                 editor_payload = {
                     "type": "node_update",

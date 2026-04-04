@@ -48,6 +48,7 @@ export interface StreamStatePayload {
   email_draft?: string;
   editor_feedback?: string;
   is_approved?: boolean;
+  copywriter_mode?: CopywriterMode;
   copywriter_runtime_note?: string;
 }
 

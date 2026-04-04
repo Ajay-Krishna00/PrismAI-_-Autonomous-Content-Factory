@@ -53,6 +53,7 @@ export function useCampaign() {
   const backendBaseUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL ?? "http://localhost:8000";
 
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const failoverAlertShownRef = useRef(false);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -65,10 +66,34 @@ export function useCampaign() {
     ]);
   };
 
+  const handleRuntimeNote = (runtimeNote?: string, runtimeMode?: CopywriterMode) => {
+    const note = runtimeNote?.trim();
+    if (!note) return;
+
+    const switchedToGroq =
+      /automatically switched to groq|switching to groq|local ollama is unreachable|not installed/i.test(
+        note,
+      );
+
+    if (runtimeMode === "groq" || switchedToGroq) {
+      setCopywriterMode("groq");
+    }
+
+    if (switchedToGroq && !failoverAlertShownRef.current && typeof window !== "undefined") {
+      window.alert(
+        "Local Llama (Ollama) is unreachable or not installed. Switching to Groq Llama automatically.",
+      );
+      failoverAlertShownRef.current = true;
+    }
+
+    pushChat("System", note);
+  };
+
   const handleStartCampaign = async () => {
     if (!sourceMaterial.trim() || isCampaignRunning) return;
 
     setIsCampaignRunning(true);
+    failoverAlertShownRef.current = false;
 
     setStep(2);
     setAgentStatus({ researcher: "thinking", copywriter: "idle", editor: "idle" });
@@ -164,9 +189,7 @@ export function useCampaign() {
                 }));
                 setChannelApprovals(initialChannelApprovals);
                 pushChat("Copywriter", "Drafts are ready. Sending over to the Editor for review.");
-                if (state.copywriter_runtime_note) {
-                  pushChat("System", state.copywriter_runtime_note);
-                }
+                handleRuntimeNote(state.copywriter_runtime_note, state.copywriter_mode);
                 pushChat("Editor", "Reviewing content against brand safety and strict guidelines...");
               } else if (node === "editor") {
                 setResults((prev) => ({
@@ -221,6 +244,7 @@ export function useCampaign() {
     }
 
     setRegeneratingChannel(channel);
+    failoverAlertShownRef.current = false;
     pushChat("Copywriter", `Regenerating ${channel.toUpperCase()} channel with the latest constraints...`);
 
     try {
@@ -249,6 +273,7 @@ export function useCampaign() {
         draft_copy: string;
         social_draft: string;
         email_draft: string;
+        copywriter_mode?: CopywriterMode;
         copywriter_runtime_note?: string;
       };
 
@@ -266,9 +291,7 @@ export function useCampaign() {
       setChannelApprovals((prev) => ({ ...prev, [channel]: false }));
       setActiveTab(channel);
       pushChat("Copywriter", `${channel.toUpperCase()} channel regenerated successfully.`);
-      if (data.copywriter_runtime_note) {
-        pushChat("System", data.copywriter_runtime_note);
-      }
+      handleRuntimeNote(data.copywriter_runtime_note, data.copywriter_mode);
     } catch (error) {
       console.error(error);
       pushChat("System", `Failed to regenerate ${channel.toUpperCase()} channel.`);
