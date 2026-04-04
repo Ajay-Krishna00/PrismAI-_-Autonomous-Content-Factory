@@ -1,43 +1,96 @@
-# Autonomous Content Factory
+# Project Title
 
-An AI-powered multi-agent system built to automate marketing campaigns from a single source document. Built with Next.js, FastAPI, LangGraph, Google Gemini, and Llama-3.
+PrismAI - Autonomous Content Factory
 
-## System Architecture
-- **Frontend**: Next.js (App Router) + Tailwind CSS
-- **Backend**: FastAPI + LangGraph (Python)
-- **AI Models**: Google Gemini 2.5 Flash (via API) + llama3:8b-instruct-q4_K_M (Local)
-- **Deployment**: Docker Compose
+## The Problem
 
-## Prerequisites
-1. **Ollama**: You must have Ollama installed natively on your host machine to run Llama-3. We intentionally decoupled this from Docker to prevent GPU-passthrough errors across different hardware environments.
-   - Install from [ollama.com](https://ollama.com).
-   - Once installed, open your terminal and run: `ollama run llama3:8b-instruct-q4_K_M`
-2. **Docker**: Ensure Docker Desktop is installed and running.
+Marketing teams often need to transform one source document into multiple channel-ready assets, but manual drafting is slow and inconsistent. The same product details can be interpreted differently across blog, social, and email formats, which creates quality gaps and rework. Teams need a faster way to generate consistent campaign content while still preserving editorial review.
 
-## Local Setup Instructions
+## The Solution
 
-1. **Clone the repository**:
-   ```bash
-   git clone [YOUR_REPO_URL]
-   cd PrismAI
-   ```
+PrismAI is a multi-agent content generation system that turns a single source input into coordinated campaign drafts. A researcher agent extracts structured facts, a copywriter agent generates channel-specific content, and an editor agent reviews quality with iterative refinement. The app provides a Next.js dashboard and FastAPI backend, with support for cloud and local LLM runtimes.
 
-2. **Environment Variables**:
-   Create a `.env` file in the `backend/` directory:
-   ```bash
-   # Create a new backend/.env file and add your Gemini API key:
-   GEMINI_API_KEY=your_key_here
-   ```
+## Tech Stack
 
-3. **Run the Application**:
-   Execute the following command in the root directory to spin up the Frontend and Backend:
-   ```bash
-   docker-compose up --build
-   ```
+- Programming languages: Python, TypeScript, JavaScript
+- Frontend frameworks and UI: Next.js (App Router), React, Tailwind CSS
+- Backend frameworks and orchestration: FastAPI, LangGraph, LangChain
+- AI and model runtimes: Google Gemini API (gemini-2.5-flash), Groq API, Ollama (llama3:8b-instruct-q4_K_M)
+- Databases: No persistent database is used in the current version
+- APIs and third-party tools: Uvicorn, python-dotenv, Docker Compose
 
-4. **Access the App**:
-   - Frontend Dashboard: `http://localhost:3000`
-   - Backend API Docs: `http://localhost:8000/docs`
+## Setup Instructions
 
----
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Ajay-Krishna00/PrismAI-_-Autonomous-Content-Factory
+cd PrismAI
+```
+
+### 2. Backend setup (Python)
+
+```bash
+cd backend
+python -m venv .venv
+```
+
+Windows PowerShell:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Install backend dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Create `backend/.env` and set keys:
+
+```env
+GEMINI_API_KEY=your_gemini_api_key
+GROQ_API_KEY=your_groq_api_key
+```
+
+If you want to use local model mode, install Ollama and pull the model:
+
+```bash
+ollama run llama3:8b-instruct-q4_K_M
+```
+
+### 3. Frontend setup (Next.js)
+
+```bash
+cd ../frontend
+npm install
+```
+
+### 4. Run the project locally
+
+Start backend (Terminal 1):
+
+```bash
+cd backend
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Start frontend (Terminal 2):
+
+```bash
+cd frontend
+npm run dev
+```
+
+Open:
+
+- Frontend: http://localhost:3000
+- Backend API docs: http://localhost:8000/docs
+
+### 5. Optional Docker run
+
+```bash
+docker-compose up --build
+```
 
