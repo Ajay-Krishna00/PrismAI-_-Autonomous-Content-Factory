@@ -556,6 +556,7 @@ def run_copywriter(state: GraphState, regenerate_channel: ChannelKey | None = No
     mode = state.get("copywriter_mode", "groq")
     facts_for_prompt = _clip_for_prompt(facts, max_chars=14000)
     feedback_for_prompt = _clip_for_prompt(feedback, max_chars=2500)
+    print(f"Copywriter received {len(facts_for_prompt)} chars of facts and {len(feedback_for_prompt)} chars of feedback for prompt.")
 
     scope_instruction = (
         f"Generate ONLY the {regenerate_channel} field. Set all other fields to an empty string."

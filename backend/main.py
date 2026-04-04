@@ -70,7 +70,7 @@ def _build_initial_state(source_material: str, copywriter_mode: Literal["local",
     }
 
 
-def _run_campaign_pipeline(initial_state: GraphState, max_revisions: int = 3):
+def _run_campaign_pipeline(initial_state: GraphState, max_revisions: int = 4):
     state: GraphState = {**initial_state}
 
     researcher_update = run_researcher(state)
@@ -180,7 +180,7 @@ async def generate_campaign_stream(request: CampaignRequest):
         try:
             state = _build_initial_state(request.source_material, request.copywriter_mode)
             last_state = {**state}
-            max_revisions = 3
+            max_revisions = 4
 
             start_payload = {
                 "type": "node_start",
