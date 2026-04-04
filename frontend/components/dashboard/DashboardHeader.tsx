@@ -21,7 +21,7 @@ export default function DashboardHeader({
 }: DashboardHeaderProps) {
   return (
     <header className="flex justify-between items-center w-full px-6 py-4 border-b border-[#3C4A42]/30 bg-[#131313] shrink-0">
-      <button onClick={()=> window.location.href = "/"} className="flex items-center gap-3" >
+      <button onClick={()=> window.location.href = "/"} className="flex items-center gap-3 cursor-pointer" >
         <Play className="text-[#10B981] fill-current" size={20} />
         <span className="text-xl font-black text-[#10B981] tracking-tighter">
           PrismAI

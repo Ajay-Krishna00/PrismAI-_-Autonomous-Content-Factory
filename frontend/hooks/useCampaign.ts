@@ -187,6 +187,7 @@ export function useCampaign() {
               }
             } else if (data.type === "end") {
               pushChat("System", data.message ?? "Campaign execution completed.");
+              setActiveTab("blog");
             } else if (data.type === "error") {
               pushChat("System", `Error encountered: ${data.message ?? "Unknown error"}`);
               setAgentStatus({ researcher: "error", copywriter: "error", editor: "error" });
