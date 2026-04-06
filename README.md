@@ -4,7 +4,8 @@ PrismAI - Autonomous Content Factory
 
 ## Live Demo
 
-- https://prism-ai-autonomous-content-factory-five.vercel.app/
+- [Website Link](https://prism-ai-autonomous-content-factory-five.vercel.app/)
+- [Video of Demo](https://drive.google.com/file/d/1NiWImZY5pssLU8k8R20V-70DLWFO0bfS/view?usp=sharing)
 
 ## The Problem
 
@@ -89,7 +90,7 @@ npm run dev
 
 Open:
 
-- Frontend: http://localhost:3000
+- Frontend: http://localhost:3000 (open in chrome/brave. does not work on Mozilla)
 - Backend API docs: http://localhost:8000/docs
 
 ### 5. Optional Docker run
