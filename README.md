@@ -6,6 +6,7 @@ PrismAI - Autonomous Content Factory
 
 - [Website Link](https://prism-ai-autonomous-content-factory-five.vercel.app/)
 - [Video of Demo](https://drive.google.com/file/d/1NiWImZY5pssLU8k8R20V-70DLWFO0bfS/view?usp=sharing)
+- [Design Document](https://docs.google.com/document/d/1RgYiN0YAQ8xc8l3JQvxiNWrpo1zKqn-gVvJOAdzEjaE/edit?usp=sharing)
 
 ## The Problem
 
